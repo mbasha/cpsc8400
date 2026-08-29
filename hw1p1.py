@@ -31,36 +31,6 @@ def call_grader_local(i):
          6000, 7000, 8000, 9000, 10000]
     return A[i]
 
-
-def closest_index(N, T):
-    values = {}
-
-    def value_at(index):
-        if index not in values:
-            if "grader" in globals():
-                values[index] = grader.call_grader(index)
-            else:
-                values[index] = call_grader_local(index)
-        return values[index]
-
-    low = 0
-    high = N
-    while low < high:
-        middle = (low + high) // 2
-        if value_at(middle) < T:
-            low = middle + 1
-        else:
-            high = middle
-
-    candidates = []
-    if low < N:
-        candidates.append(low)
-    if low > 0:
-        candidates.append(low - 1)
-
-    return min(candidates, key=lambda index: (abs(value_at(index) - T), index))
-
-
 def main():
     
     # Values for N and T are set in the grading system 
@@ -75,19 +45,27 @@ def main():
         N = 10
         T = 8400
 
-    # ---------------------------------------- 
-    # This is the part of main() you should modify.
-    # (you are welcome to write other functions above 
-    # and call them here, but all your code should be 
-    # submitted in this one file).
+    left = 0
+    right = N - 1
     
-    my_answer = closest_index(N, T)
-    # ----------------------------------------
+    while left < right:
+        mid = (left + right) // 2
+        mid_value = grader.call_grader(mid)
+        
+        if mid_value < T:
+            left = mid + 1
+        else:
+            right = mid
+    
+    my_answer = left
+    closest = abs(grader.call_grader(left) - T)
+    
+    if left > 0:
+        left_value = grader.call_grader(left - 1)
+        left_distance = abs(left_value - T)
+        if left_distance < closest:
+            my_answer = left - 1
 
-    # Afterwards, you should print out the value of
-    # an index i for which A[i] is closest to T.
-    # You should only print this number on standard output,
-    # nothing else.
     print(my_answer)
 
 if __name__ == "__main__":
