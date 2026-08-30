@@ -40,29 +40,31 @@ def main():
     except:
         N = 100
 
-    my_answer = 50
-
-    # ---------------------------------------- 
-    # This is the part of main() you should modify.
-    # (you are welcome to write other functions above 
-    # and call them here, but all your code should be 
-    # submitted in this one file).
-
-    m = 0.0;
-    for i in range(N):
-        value = call_grader_local(float(i)) # call_grader_local needs to be switched to grader.call_grader when you submit!!
-        if value == -1:
-            break
-        if value > m :
-            my_answer = i
-            m = value
+    left = 0
+    right = N - 1
     
-    # ----------------------------------------
+    while right - left > 2:
+        mid1 = left + (right - left) // 3
+        mid2 = right - (right - left) // 3
+        
+        val1 = call_grader_local(mid1)
+        val2 = call_grader_local(mid2)
+        
+        if val1 > val2:
+            right = mid2 - 1
+        else:
+            left = mid1 + 1
+    
+    # Check remaining elements
+    my_answer = left
+    max_val = call_grader_local(left)
+    
+    for i in range(left + 1, right + 1):
+        value = call_grader_local(i)
+        if value > max_val:
+            my_answer = i
+            max_val = value
 
-    # Afterwards, you should print out the value of
-    # an index i for which A[i] is closest to the maximum.
-    # You should only print this number on standard output,
-    # nothing else.
     print(my_answer)
 
 if __name__ == "__main__":
