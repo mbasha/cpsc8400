@@ -47,8 +47,8 @@ def main():
         mid1 = left + (right - left) // 3
         mid2 = right - (right - left) // 3
         
-        val1 = call_grader_local(mid1)
-        val2 = call_grader_local(mid2)
+        val1 = grader.call_grader(mid1)
+        val2 = grader.call_grader(mid2)
         
         if val1 > val2:
             right = mid2 - 1
@@ -57,10 +57,10 @@ def main():
     
     # Check remaining elements
     my_answer = left
-    max_val = call_grader_local(left)
+    max_val = grader.call_grader(left)
     
     for i in range(left + 1, right + 1):
-        value = call_grader_local(i)
+        value = grader.call_grader(i)
         if value > max_val:
             my_answer = i
             max_val = value
