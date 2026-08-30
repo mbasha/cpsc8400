@@ -49,35 +49,33 @@ def main():
         K = 4
         R = 7
 
+    left = 0.0
+    right = 1.0
     my_answer = 0.5
-
-    # ---------------------------------------- 
-    # This is the part of main() you should modify. 
-    # For each of R rounds,
-    # you can evaluate f(x) at K values of x
-    # (you are welcome to write other functions above
-    # and call them here, but all your code should be
-    # submitted in this one file).
-
-    best = 0.0;
-    for i in range(R):
+    best = -1.0
+    
+    for round_num in range(R):
         x = []
-        # Right now, we're not being particularly smart --
-        # we're just evaluating at random values of x
-        # and taking whichever one was the best as our answer.
         for j in range(K):
-            x.append(random.random())
-        y = call_grader_local(x) # call_grader_local needs to be switched to grader.call_grader when you submit!!
+            x.append(left + (right - left) * (j + 1) / (K + 1))
+        
+        y = call_grader_local(x)
+        
+        best_idx = 0
         for j in range(K):
             if y[j] > best:
                 best = y[j]
                 my_answer = x[j]
-    # ----------------------------------------
+                best_idx = j
 
-    # Afterwards, you should print out the value of x
-    # (a real number in the range [0,1]) that you think
-    # is closest to maximizing f(x). You should only
-    # print this number on standard output, nothing else.
+        if best_idx == 0:
+            right = x[best_idx + 1] if best_idx + 1 < K else right
+        elif best_idx == K - 1:
+            left = x[best_idx - 1] if best_idx > 0 else left
+        else:
+            left = x[best_idx - 1]
+            right = x[best_idx + 1]
+
     print(my_answer)
 
 if __name__ == "__main__":
