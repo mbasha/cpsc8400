@@ -59,7 +59,7 @@ def main():
         for j in range(K):
             x.append(left + (right - left) * (j + 1) / (K + 1))
         
-        y = call_grader_local(x)
+        y = grader.call_grader(x)
         
         best_idx = -1
         for j in range(K):
