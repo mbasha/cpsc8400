@@ -61,20 +61,17 @@ def main():
         
         y = call_grader_local(x)
         
-        best_idx = 0
+        best_idx = -1
         for j in range(K):
             if y[j] > best:
                 best = y[j]
                 my_answer = x[j]
                 best_idx = j
 
-        if best_idx == 0:
-            right = x[best_idx + 1] if best_idx + 1 < K else right
-        elif best_idx == K - 1:
-            left = x[best_idx - 1] if best_idx > 0 else left
-        else:
-            left = x[best_idx - 1]
-            right = x[best_idx + 1]
+        if best_idx >= 0:
+            margin = (right - left) / (2 * K)
+            left = max(0.0, x[best_idx] - margin)
+            right = min(1.0, x[best_idx] + margin)
 
     print(my_answer)
 
