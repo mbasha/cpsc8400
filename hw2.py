@@ -1,4 +1,4 @@
-import os, sys, math
+import os, sys, math, random
 from functools import cmp_to_key
 
 # This imports from a file that will be present in the
@@ -12,6 +12,7 @@ except:
 
 
 N = 0 # problem size
+allocation_order = []  # Track the order players receive slices
 
 def mycomp(p1, p2, v):
     # This function, grader.compare() (which will be
@@ -56,8 +57,64 @@ def compare_local(player1, player2, v):
     c2 = math.sqrt(v * peak2) if v <= peak2 else 1 - math.sqrt((1 - v) * (1 - peak2))
     return -1 if c1 <= c2 else 1
 
+
+def quickselect_median(players, value_threshold, compare_fn):
+    if len(players) == 1:
+        return players[0]
+    
+    pivot_idx = random.randint(0, len(players) - 1)
+    pivot = players[pivot_idx]
+    left = []
+    right = []
+
+    for p in players:
+        if p == pivot:
+            continue
+        if compare_fn(p, pivot, value_threshold) <= 0:
+            left.append(p)
+        else:
+            right.append(p)
+    
+    median_pos = len(players) // 2
+    if len(left) == median_pos:
+        return pivot
+    elif len(left) > median_pos:
+        return quickselect_median(left, value_threshold, compare_fn)
+    else:
+        return quickselect_median(right, value_threshold, compare_fn)
+
+
+def divide_conquer(players, value_threshold, compare_fn):
+    global allocation_order
+    
+    if len(players) == 0:
+        return []
+    
+    if len(players) == 1:
+        allocation_order.append(players[0])
+        return [players[0]]
+    
+    median_player = quickselect_median(players, value_threshold, compare_fn)
+    left_group = []
+    right_group = []
+    
+    for p in players:
+        if p == median_player:
+            continue
+        if compare_fn(p, median_player, value_threshold) <= 0:
+            left_group.append(p)
+        else:
+            right_group.append(p)
+    
+    result = []
+    result.extend(divide_conquer(left_group, value_threshold, compare_fn))
+    result.extend(divide_conquer(right_group, value_threshold, compare_fn))
+    
+    return result
+
+
 def main():
-    global N
+    global N, allocation_order
     # The values for N is set in the grading system
     # through an environment variable, if present.
     # If not present, feel welcome to set N to
@@ -67,25 +124,16 @@ def main():
     except:
         N = 30  # Set your own value here for local testing if you want
 
-    # ---------------------------------------- 
-    # This is the part of main() you should modify.
-    # (you are welcome to write other functions above
-    # and call them here, but all your code should be
-    # submitted in this one file).
-
-    P = list(range(N)) # creates a list of integers from 0 to N-1
-
-    # switch 'mycomp' to 'compare_local' for local testing
-    P = sorted(P, key=cmp_to_key(lambda p1, p2: mycomp(p1, p2, 0.5)))
-
-    # ----------------------------------------
-
-    # At the end, you should print out the order of
-    # the players for their allocations.  Each player
-    # is an integer index in the range 0 .. N-1.
-    # You should just print these N numbers, separated
-    # by whitespace, and nothing else.
-    print('\n'.join(str(i) for i in P))
+    allocation_order = []
+    P = list(range(N))
+    compare_func = mycomp
+    if N % 2 == 0:
+        first_threshold = 0.5
+    else:
+        first_threshold = math.floor(N / 2.0) / N
+    
+    result = divide_conquer(P, first_threshold, compare_func)
+    print('\n'.join(str(i) for i in result))
 
 if __name__ == "__main__":
     main()
