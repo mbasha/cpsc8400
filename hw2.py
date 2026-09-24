@@ -30,7 +30,7 @@ def compare_local(player1, player2, v):
     c2 = math.sqrt(v * peak2) if v <= peak2 else 1 - math.sqrt((1 - v) * (1 - peak2))
     return -1 if c1 <= c2 else 1
 
-def quickselect_median(players, value_threshold, compare_fn):
+def quickselect_min(players, value_threshold, compare_fn):
     if len(players) == 1:
         return players[0]
     
@@ -47,39 +47,24 @@ def quickselect_median(players, value_threshold, compare_fn):
         else:
             right.append(p)
     
-    median_pos = len(players) // 2
-    
-    if len(left) == median_pos:
+    if len(left) == 0:
         return pivot
-    elif len(left) > median_pos:
-        return quickselect_median(left, value_threshold, compare_fn)
     else:
-        return quickselect_median(right, value_threshold, compare_fn)
+        return quickselect_min(left, value_threshold, compare_fn)
 
-def divide_conquer(players, value_threshold, compare_fn):
+def fair_division(players, remaining_value, compare_fn):
     if len(players) == 0:
         return []
     
     if len(players) == 1:
         return [players[0]]
     
-    median_player = quickselect_median(players, value_threshold, compare_fn)
+    value_per_player = remaining_value / len(players)
+    min_player = quickselect_min(players, value_per_player, compare_fn)
     
-    left_group = []
-    right_group = []
-    
-    for p in players:
-        if p == median_player:
-            continue
-        if compare_fn(p, median_player, value_threshold) <= 0:
-            left_group.append(p)
-        else:
-            right_group.append(p)
-    
-    result = []
-    result.extend(divide_conquer(left_group, value_threshold, compare_fn))
-    result.append(median_player)
-    result.extend(divide_conquer(right_group, value_threshold, compare_fn))
+    remaining_players = [p for p in players if p != min_player]
+    result = [min_player]
+    result.extend(fair_division(remaining_players, remaining_value - value_per_player, compare_fn))
     
     return result
 
@@ -92,15 +77,8 @@ def main():
         N = 30
 
     P = list(range(N))
-    
     compare_func = mycomp
-    
-    if N % 2 == 0:
-        first_threshold = 0.5
-    else:
-        first_threshold = math.floor(N / 2.0) / N
-    
-    result = divide_conquer(P, first_threshold, compare_func)
+    result = fair_division(P, 1.0, compare_func)
     
     print('\n'.join(str(i) for i in result))
 
