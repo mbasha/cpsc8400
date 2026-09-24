@@ -7,8 +7,7 @@ try:
 except:
     pass
 
-
-N = 0 # problem size
+N = 0
 
 
 def mycomp(p1, p2, v):
@@ -32,96 +31,73 @@ def compare_local(player1, player2, v):
     peak1 = 1.0 - (1.0 + player1) / (1.0 + N)
     peak2 = 1.0 - (1.0 + player2) / (1.0 + N)
 
-    c1 = (
-        math.sqrt(v * peak1)
-        if v <= peak1
+    c1 = math.sqrt(v * peak1) if v <= peak1 \
         else 1 - math.sqrt((1 - v) * (1 - peak1))
-    )
 
-    c2 = (
-        math.sqrt(v * peak2)
-        if v <= peak2
+    c2 = math.sqrt(v * peak2) if v <= peak2 \
         else 1 - math.sqrt((1 - v) * (1 - peak2))
-    )
 
     return -1 if c1 <= c2 else 1
 
 
-# ---------------------------------------------------------
-# Randomized quickselect
-# ---------------------------------------------------------
 def quickselect(players, k, v, compare_fn):
 
     while len(players) > 1:
 
-        pivot = players[random.randint(0, len(players) - 1)]
+        pivot = random.choice(players)
 
-        less = []
-        greater = []
+        left = []
+        right = []
 
         for p in players:
             if p == pivot:
                 continue
 
             if compare_fn(p, pivot, v) == -1:
-                less.append(p)
+                left.append(p)
             else:
-                greater.append(p)
+                right.append(p)
 
-        # The pivot is the k-th element.
-        if k == len(less):
+        if k < len(left):
+            players = left
+
+        elif k == len(left):
             return pivot
 
-        # Desired element is in the left partition.
-        elif k < len(less):
-            players = less
-
-        # Desired element is in the right partition.
         else:
-            k = k - len(less) - 1
-            players = greater
+            k -= len(left) + 1
+            players = right
 
     return players[0]
 
 
-# ---------------------------------------------------------
-# Divide-and-conquer fair division
-# ---------------------------------------------------------
-def fair_division(players, side, compare_fn):
+def divide_and_conquer(players, start_count, compare_fn):
 
     m = len(players)
 
-    # Base case
     if m <= 1:
         return players
 
-    # Number of players in the left and right groups.
     left_size = m // 2
     right_size = m - left_size
 
-    if side == 0:
-        v = left_size / N
-    else:
-        v = 1.0 - (right_size / N)
+    split_value = (start_count + left_size) / N
 
-    # Find the last player belonging to the left group.
     boundary = quickselect(
         players,
         left_size - 1,
-        v,
+        split_value,
         compare_fn
     )
 
     left = []
     right = []
 
-    # Partition around the boundary player.
     for p in players:
-
         if p == boundary:
             continue
 
-        if compare_fn(p, boundary, v) == -1:
+        if compare_fn(p, boundary, split_value) == -1:
             left.append(p)
         else:
             right.append(p)
@@ -129,16 +105,15 @@ def fair_division(players, side, compare_fn):
     # Boundary belongs to the left group.
     left.append(boundary)
 
-    # Recursively solve both sides.
-    left_order = fair_division(
+    left_order = divide_and_conquer(
         left,
-        0,
+        start_count,
         compare_fn
     )
 
-    right_order = fair_division(
+    right_order = divide_and_conquer(
         right,
-        1,
+        start_count + left_size,
         compare_fn
     )
 
@@ -155,10 +130,17 @@ def main():
 
     P = list(range(N))
 
-    # switch 'mycomp' to 'compare_local' for local testing
+    # For Gradescope:
     compare_fn = mycomp
 
-    P = fair_division(P, 0, compare_fn)
+    # For local testing:
+    # compare_fn = compare_local
+
+    P = divide_and_conquer(
+        P,
+        0,
+        compare_fn
+    )
 
     print('\n'.join(str(i) for i in P))
 
